@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Rojak AI Factory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+    <!-- Navbar Admin -->
+    <header class="border-b border-rose-900/50 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="bg-rose-600 text-white font-bold text-lg px-3 py-1 rounded-lg">ADMIN</span>
+                <span class="font-bold text-lg text-white">Panel Kontrol Rojak AI Factory</span>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span class="text-xs bg-rose-500/10 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full font-semibold">Master Key Active</span>
+                <button onclick="logoutAdmin()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg transition font-medium">Keluar</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Admin Panel -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
+        
+        <!-- Left & Middle: Stats & Database Log -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Financial & Member Quick Stats -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
+                    <div class="text-xs text-slate-400 uppercase font-semibold">Total Omzet Masuk</div>
+                    <div class="text-2xl font-black text-emerald-400 mt-2">Rp 4.750.000</div>
+                    <div class="text-xs text-slate-500 mt-1">Bulanan & Tahunan (Diskon 20%)</div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
+                    <div class="text-xs text-slate-400 uppercase font-semibold">Total Member Aktif</div>
+                    <div class="text-2xl font-black text-indigo-400 mt-2">18 Member</div>
+                    <div class="text-xs text-slate-500 mt-1">+3 hari ini</div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
+                    <div class="text-xs text-slate-400 uppercase font-semibold">Proyek Berjalan</div>
+                    <div class="text-2xl font-black text-amber-400 mt-2">24 Proyek</div>
+                    <div class="text-xs text-slate-500 mt-1">Free Trial & Paid</div>
+                </div>
+            </div>
+
+            <!-- Activity Log & Recent Transactions -->
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
+                <h3 class="font-bold text-white text-sm uppercase tracking-wider">📊 Database & Activity Log Real-Time</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-950 text-slate-400 uppercase">
+                            <tr>
+                                <th class="p-3 rounded-l-lg">Waktu</th>
+                                <th class="p-3">User / Email</th>
+                                <th class="p-3">Aktivitas</th>
+                                <th class="p-3 rounded-r-lg">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800">
+                            <tr>
+                                <td class="p-3 text-slate-400">Baru saja</td>
+                                <td class="p-3 font-medium text-white">rojak.dev@gmail.com</td>
+                                <td class="p-3">Generate PRD Aplikasi Kasir</td>
+                                <td class="p-3"><span class="bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded">Success</span></td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 text-slate-400">15 menit lalu</td>
+                                <td class="p-3 font-medium text-white">ahmad.tangerang@gmail.com</td>
+                                <td class="p-3">Upgrade Paket Tahunan (Diskon 20%)</td>
+                                <td class="p-3"><span class="bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded">Paid PayPal</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Panel: AI Business Advisor & Marketing Agent (Auto-Posting 3 Jam) -->
+        <div class="lg:col-span-1 space-y-6">
+            
+            <!-- AI Voice & Business Advisor -->
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-white text-sm uppercase tracking-wider">🎙️ AI Admin Assistant</h3>
+                    <button onclick="speakReport()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg font-semibold transition">Putar Suara AI</button>
+                </div>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    Asisten AI membaca database platform secara utuh. Klik tombol untuk mendengarkan ringkasan omzet dan saran bisnis hari ini.
+                </p>
+                <div id="ai-advice-box" class="p-3 bg-slate-950 border border-indigo-500/30 rounded-xl text-xs text-indigo-300">
+                    "Halo Bro Rojak! Omzet minggu ini naik 30%. Disarankan membuat promo diskon kilat khusus akhir pekan untuk mendongkrak konversi."
+                </div>
+            </div>
+
+            <!-- AI Marketing Agent (Auto-Posting WA & IG tiap 3 jam) -->
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-white text-sm uppercase tracking-wider">🤖 AI Marketing Agent</h3>
+                    <span class="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded font-bold">Auto-Active ( tiap 3 Jam )</span>
+                </div>
+                <p class="text-xs text-slate-400">
+                    Agen AI secara otomatis meracik konten promosi personal branding dan video/teks status untuk WA & Instagram.
+                </p>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Draf Konten Status Terbaru:</label>
+                    <textarea readonly rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-300 focus:outline-none">"Gak perlu jago koding buat punya aplikasi bisnis sendiri! Pakai Rojak AI Factory, ide PRD kamu langsung jadi aplikasi pro 24 jam. Cek link di bio!"</textarea>
+                </div>
+                <button onclick="triggerPublish()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl shadow transition text-xs">Kirim/Publish Status Sekarang</button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Script Admin -->
+    <script>
+        function speakReport() {
+            if ('speechSynthesis' in window) {
+                const text = "Halo Bro Rojak. Laporan sistem aktif. Omzet platform berjalan lancar, member bertambah 18 orang, dan agen marketing siap menjadwalkan konten status berikutnya.";
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'id-ID';
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("Fitur suara AI diputar.");
+            }
+        }
+
+        function triggerPublish() {
+            alert("Konten promosi WhatsApp & Instagram berhasil di-generate dan dipublikasikan otomatis oleh AI Marketing Agent!");
+        }
+
+        function logoutAdmin() {
+            alert("Keluar dari panel admin...");
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
