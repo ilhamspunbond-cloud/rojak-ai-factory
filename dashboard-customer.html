@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Customer - Rojak AI Factory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+    <!-- Navbar Customer -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="bg-indigo-600 text-white font-bold text-lg px-3 py-1 rounded-lg">RAF</span>
+                <span class="font-bold text-lg text-white">Dashboard Proyek Customer</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-semibold">Free Trial: 5x Kuota</span>
+                <button onclick="logout()" class="text-xs bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-lg transition font-medium">Keluar</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
+        
+        <!-- Left Panel: Project List & Smart PRD Input -->
+        <div class="lg:col-span-1 space-y-6">
+            
+            <!-- My Projects Box -->
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-white text-sm uppercase tracking-wider">My Projects</h3>
+                    <button onclick="createNewProject()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-1 rounded font-medium">+ Proyek Baru</button>
+                </div>
+                <div id="project-list" class="space-y-2">
+                    <div class="p-3 bg-slate-950 border border-indigo-500/50 rounded-xl cursor-pointer">
+                        <div class="font-semibold text-sm text-indigo-300">Aplikasi Kasir Toko (Active)</div>
+                        <div class="text-xs text-slate-400 mt-1">Status: Free Trial (Sisa 5x Generate)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart PRD Enhancer & Generator -->
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-4">
+                <h3 class="font-bold text-white text-sm uppercase tracking-wider">🤖 Smart PRD & AI Generator</h3>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Deskripsi / PRD Aplikasi Anda</label>
+                    <textarea id="prd-input" rows="4" placeholder="Contoh: Buat aplikasi pencatatan keuangan harian dengan grafik bulanan warna biru..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
+                <button onclick="enhancePRD()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl shadow-lg transition text-sm">Analisis & Sempurnakan PRD</button>
+            </div>
+
+        </div>
+
+        <!-- Right Panel: Live Preview & Watermark -->
+        <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl flex flex-col overflow-hidden relative">
+            
+            <!-- Watermark Banner Warning -->
+            <div id="watermark-banner" class="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 flex justify-between items-center text-xs text-amber-400">
+                <span class="font-semibold">⚠️ PREVIEW VERSION: Watermark Rojak AI Factory Aktif</span>
+                <button onclick="openUpgradeModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1 rounded transition">Upgrade Rp250rb / Thn Diskon 20%</button>
+            </div>
+
+            <!-- Preview Screen Area -->
+            <div id="preview-screen" class="flex-grow bg-slate-950 p-6 flex flex-col items-center justify-center text-center">
+                <div class="space-y-3 max-w-md">
+                    <div class="w-16 h-16 bg-indigo-600/20 border border-indigo-500/40 rounded-2xl mx-auto flex items-center justify-center text-indigo-400 text-2xl font-bold">AI</div>
+                    <h3 class="text-xl font-bold text-white">Workspace Kosong</h3>
+                    <p class="text-slate-400 text-sm">Masukkan ide PRD di sebelah kiri lalu klik "Analisis & Sempurnakan PRD" untuk mulai merakit aplikasi impian Anda secara instan.</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Script Dashboard Customer -->
+    <script>
+        function enhancePRD() {
+            const prdText = document.getElementById('prd-input').value.trim();
+            if(!prdText) {
+                alert("Harap masukkan deskripsi atau PRD aplikasi Anda terlebih dahulu!");
+                return;
+            }
+
+            alert("AI PRD Enhancer Berhasil Menganalisis!\n\nPRD Anda telah dirapikan dan direkomendasikan fitur profesional. Memulai proses generate kode aplikasi...");
+            
+            // Simulasi Render Hasil Live Preview
+            document.getElementById('preview-screen').innerHTML = `
+                <div class="w-full h-full bg-white text-slate-900 rounded-xl p-6 shadow-2xl text-left overflow-y-auto">
+                    <div class="flex justify-between items-center border-b pb-4 mb-4">
+                        <h2 class="text-xl font-black text-indigo-600">Aplikasi Hasil Generate AI</h2>
+                        <span class="text-xs bg-indigo-100 text-indigo-700 font-bold px-2 py-1 rounded">Live Preview</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4">Berdasarkan PRD: "<i>${prdText}</i>"</p>
+                    <div class="p-4 bg-indigo-50 rounded-lg border border-indigo-100 mb-4">
+                        <div class="font-bold text-indigo-900 text-sm">Fitur Profesional Ditambahkan AI:</div>
+                        <ul class="list-disc list-inside text-xs text-indigo-700 mt-1 space-y-1">
+                            <div>• Sistem Navigasi Responsif PWA</div>
+                            <div>• LocalStorage Auto-Save Database</div>
+                            <div>• UI/UX Modern Tailwind CSS</div>
+                        </ul>
+                    </div>
+                    <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow">Tombol Interaktif Berfungsi</button>
+                </div>
+            `;
+        }
+
+        function openUpgradeModal() {
+            alert("Pilihan Paket Langganan:\n1. Bulanan: Rp250.000 (50x Kuota/bulan)\n2. Tahunan (Diskon 20%): Rp2.400.000 + Bonus Domain Gratis!\n\n(Integrasi PayPal Checkout & Kartu Kredit akan dicolok di Tahap 3).");
+        }
+
+        function createNewProject() {
+            alert("Fitur Proyek Baru: Membuat ruang kerja proyek aplikasi terisolasi yang baru.");
+        }
+
+        function logout() {
+            alert("Keluar dari sistem...");
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
