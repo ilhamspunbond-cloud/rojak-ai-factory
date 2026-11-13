@@ -2,41 +2,30 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#d9480f">
     <title>Rojak Design</title>
 
-    <!-- 1. Pemanggil File Style & Konfigurasi PWA -->
-    <link rel="stylesheet" href="style.css">
+    <!-- Konfigurasi PWA & Manifest -->
     <link rel="manifest" href="manifest.webmanifest">
     
-    <!-- 2. Pemanggil Ikon / Favicon -->
+    <!-- Ikon Aplikasi & Favicon -->
     <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+    <!-- Stylesheet Utama -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
-        <img id="logo" src="icons/icon.svg" alt="Logo Rojak Design">
+        <img id="logo" alt="Logo Rojak Design">
         <b>Rojak Design</b>
     </header>
-    
+
     <nav id="nav"></nav>
     <main id="m"></main>
 
-    <!-- 3. Pemanggil Script Utama & Pendaftaran Service Worker (Offline Mode) -->
+    <!-- Skrip Utama Aplikasi -->
     <script src="app.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then((reg) => {
-                        console.log('Service Worker berhasil didaftarkan, scope:', reg.scope);
-                    })
-                    .catch((err) => {
-                        console.log('Pendaftaran Service Worker gagal:', err);
-                    });
-            });
-        }
-    </script>
 </body>
 </html>
