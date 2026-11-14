@@ -1,54 +1,78 @@
-const K='rojak_v1',HASH='c6af49ac4c01522dd0dcf8bbf65c8fa81dfeba5bccfd5ab380e9ffa0bb1517e5';
-const D={logo:'',prices:{mockup:5000,invoice:5000,afdruk:15000,video:10000,paket:30000,dtf:55000,faceswap:50000},bank:'Mandiri: -  |  SeaBank: -',qris:'',komisi:10,orders:[]};
-let S;try{S=Object.assign({},D,JSON.parse(localStorage.getItem(K)||'{}'))}catch(e){S=D}
-const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){alert('Penyimpanan penuh, gunakan logo lebih kecil')}};
-const L={mockup:'Download Mockup Desain',invoice:'Invoice Manual Kustom',afdruk:'Mockup Afdruk Film Sablon',video:'Video Promosi Standar',paket:'Paket Komplit',dtf:'File Pecah Warna DTF',faceswap:'Custom AI Video (Face Swap)'};
-const rp=n=>'Rp'+Number(n).toLocaleString('id-ID');
-let tab='studio',user=null,admin=false,img=null,st={c:'#e8e8e8',s:60,x:0,y:0,r:0};
 const $=s=>document.querySelector(s);
-function applyLogo(){const l=S.logo||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#d9480f"/><text x="32" y="43" font-size="34" text-anchor="middle" fill="#fff" font-family="sans-serif">R</text></svg>');
-$('#logo').src=l;let f=document.querySelector('link[rel=icon]')||document.head.appendChild(Object.assign(document.createElement('link'),{rel:'icon'}));f.href=l;
-}
-function nav(){const t=[['studio','Studio'],['bayar','Bayar'],['akun','Akun']];if(admin)t.push(['admin','Admin']);
-$('#nav').innerHTML=t.map(a=>`<button class="${tab==a[0]?'on':''}" onclick="tab='${a[0]}';go()">${a[1]}</button>`).join('')}
-function paid(){return admin||S.orders.some(o=>o.user==user&&o.status=='lunas'&&['mockup','paket'].includes(o.item))}
-function draw(){const c=$('#cv');if(!c)return;const x=c.getContext('2d');c.width=400;c.height=400;x.fillStyle='#fff';x.fillRect(0,0,400,400);
-x.fillStyle=st.c;x.strokeStyle='#999';x.beginPath();x.moveTo(130,60);x.lineTo(40,120);x.lineTo(75,180);x.lineTo(110,160);x.lineTo(110,360);x.lineTo(290,360);x.lineTo(290,160);x.lineTo(325,180);x.lineTo(360,120);x.lineTo(270,60);x.quadraticCurveTo(200,110,130,60);x.fill();x.stroke();
-if(img){x.save();x.translate(200+st.x,210+st.y);x.rotate(st.r*Math.PI/180);const w=st.s*2,h=w*img.height/img.width;x.drawImage(img,-w/2,-h/2,w,h);x.restore()}
-if(!paid()){x.save();x.globalAlpha=.28;x.fillStyle='#000';x.font='bold 18px sans-serif';x.rotate(-.5);for(let i=-3;i<9;i++)for(let j=0;j<5;j++)x.fillText('ROJAK DESIGN - PREVIEW',j*260-120,i*70);x.restore()}}
-function studio(){return `<div class="c"><canvas id="cv"></canvas>
-<input type="file" accept="image/*" onchange="up(this)"><small>Upload desain/foto sampel. (AI redraw & hapus background butuh backend, lihat catatan di tab Akun.)</small>
-<div class="r">Warna produk<input type="color" value="${st.c}" oninput="st.c=this.value;draw()" style="width:60px"></div>
-${[['s','Ukuran',10,150],['x','Geser X',-100,100],['y','Geser Y',-120,120],['r','Putar',-180,180]].map(a=>`<small>${a[1]}</small><input type="range" min="${a[2]}" max="${a[3]}" value="${st[a[0]]}" oninput="st.${a[0]}=+this.value;draw()">`).join('')}
-<button class="p" onclick="dl()">${paid()?'Download PNG':'Download ('+rp(S.prices.mockup)+')'}</button></div>`}
-function up(i){const f=i.files[0];if(!f)return;const im=new Image();im.onload=()=>{img=im;draw()};im.src=URL.createObjectURL(f)}
-function dl(){if(!paid()){tab='bayar';go();return}const a=document.createElement('a');a.download='mockup.png';a.href=$('#cv').toDataURL();a.click()}
-function bayar(){if(!user)return '<div class="c">Masuk dulu di tab Akun.</div>';
-return `<div class="c"><select id="it">${Object.keys(L).map(k=>`<option value="${k}">${L[k]} - ${rp(S.prices[k])}</option>`).join('')}</select>
-<button class="p" onclick="order()">Buat pesanan</button></div>
-<div class="c"><b>Transfer ke:</b><br>${S.bank}<br>${S.qris?`<img src="${S.qris}" style="max-width:100%;margin-top:8px">`:'<small>QRIS belum diatur admin</small>'}</div>
-<div class="c"><b>Pesanan saya</b>${S.orders.filter(o=>o.user==user).map(o=>`<div class="r"><span>${L[o.item]}<br><small>${o.status}</small></span>${o.status=='dibuat'?`<input type="file" accept="image/*" style="width:150px" onchange="bukti(${o.id})">`:''}</div>`).join('')||'<small>Belum ada</small>'}</div>`}
-function order(){S.orders.push({id:Date.now(),user,item:$('#it').value,price:S.prices[$('#it').value],status:'dibuat'});save();go()}
-function bukti(id){S.orders.find(o=>o.id==id).status='menunggu validasi';save();go()}
-let otp=null,num='';
-function akun(){if(user)return `<div class="c">Masuk sebagai <b>${user}</b><br><small>Link referral: ${location.href.split('#')[0]}?ref=${user}<br>Komisi ${S.komisi}% per transaksi, minimal tarik Rp50.000</small><br><button onclick="user=null;admin=false;go()">Keluar</button></div>${note()}`;
-return `<div class="c"><input id="wa" placeholder="Nomor WhatsApp / kata kunci master" inputmode="tel" value="${num}">
-${otp?`<input id="ot" placeholder="Kode OTP"><small>Demo: kode OTP ${otp}. Versi asli dikirim via WhatsApp gateway dari server.</small><button class="p" onclick="vo()">Verifikasi</button>`:`<button class="p" onclick="lo()">Kirim OTP</button>`}</div>${note()}`}
-const note=()=>`<div class="c"><small>Prototype frontend. Fitur yang perlu backend: OTP WhatsApp asli, AI redraw, hapus background, video, face swap, pecah warna. Panggilan AI harus lewat server agar API key aman.</small></div>`;
-async function sha(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
-async function lo(){const v=$('#wa').value.trim();num=v;if(await sha(v)==HASH){admin=true;user='admin';tab='admin';return go()}
-if(!/^(\+62|62|0)8\d{7,12}$/.test(v))return alert('Nomor WhatsApp tidak valid');otp=String(Math.floor(1e5+Math.random()*9e5));go()}
-function vo(){if($('#ot').value==otp){user=num;otp=null;tab='studio';go()}else alert('Kode salah')}
-function adm(){return `<div class="c"><b>Logo aplikasi</b><br><input type="file" accept="image/*" onchange="setLogo(this)"><small>Dipakai di header, favicon, dan ikon PWA/APK.</small></div>
-<div class="c"><b>Harga</b>${Object.keys(L).map(k=>`<div class="r"><small>${L[k]}</small><input type="number" value="${S.prices[k]}" style="width:110px" onchange="S.prices['${k}']=+this.value;save()"></div>`).join('')}
-<div class="r"><small>Komisi afiliasi (%)</small><input type="number" value="${S.komisi}" style="width:110px" onchange="S.komisi=+this.value;save()"></div></div>
-<div class="c"><b>Rekening</b><textarea onchange="S.bank=this.value;save()">${S.bank}</textarea><b>QRIS</b><input type="file" accept="image/*" onchange="setQ(this)"></div>
-<div class="c"><b>Validasi pembayaran</b>${S.orders.filter(o=>o.status=='menunggu validasi').map(o=>`<div class="r"><span>${o.user}<br><small>${L[o.item]} ${rp(o.price)}</small></span><button class="p" onclick="val(${o.id})">Lunas</button></div>`).join('')||'<small>Tidak ada</small>'}
-<hr><small>Omzet lunas: ${rp(S.orders.filter(o=>o.status=='lunas').reduce((a,o)=>a+o.price,0))}</small></div>`}
-function toURL(f,max,cb){const r=new FileReader();r.onload=()=>{const i=new Image();i.onload=()=>{const k=Math.min(1,max/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*k;c.height=i.height*k;c.getContext('2d').drawImage(i,0,0,c.width,c.height);cb(c.toDataURL('image/png'))};i.src=r.result};r.readAsDataURL(f)}
-function setLogo(i){toURL(i.files[0],512,u=>{S.logo=u;save();applyLogo();alert('Logo diperbarui')})}
-function setQ(i){toURL(i.files[0],600,u=>{S.qris=u;save()})}
-function val(id){S.orders.find(o=>o.id==id).status='lunas';save();go()}
-function go(){nav();const v={studio,bayar,akun,admin:adm}[tab]();$('#m').innerHTML=v();draw()}
-applyLogo();go();
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+let T=localStorage.getItem('tk'),ME=null,CFG={prices:{}},tab='studio',img=null,file=null,asset=null,otpSent=false,phone='',st={c:'#e8e8e8',s:60,x:0,y:0,r:0};
+const rp=n=>'Rp'+Number(n||0).toLocaleString('id-ID');
+const L={mockup:'Download Mockup Desain',invoice:'Invoice Manual Kustom',afdruk:'Mockup Afdruk Film Sablon',video:'Video Promosi Standar',paket:'Paket Komplit',dtf:'File Pecah Warna DTF',faceswap:'Custom AI Video (Face Swap)'};
+async function api(p,o={}){const h={...(o.headers||{})};if(T)h.Authorization='Bearer '+T;let b=o.body;if(b&&!(b instanceof FormData)){b=JSON.stringify(b);h['Content-Type']='application/json'}
+ const r=await fetch('/api'+p,{...o,headers:h,body:b});if(o.raw&&r.ok)return r;const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'Gagal ('+r.status+')');return j}
+function A(n,f){window[n]=async(...a)=>{try{return await f(...a)}catch(e){alert(e.message)}}}
+const isAdmin=()=>ME&&ME.admin;
+async function boot(){CFG=await api('/settings');$('#an').textContent=CFG.appName;document.title=CFG.appName;const u='/api/icon/64.png?v='+CFG.v;$('#logo').src=u;$('#fav').href=u;
+ if(T)try{ME=await api('/me')}catch{T=null;localStorage.removeItem('tk')}
+ if(!T&&new URLSearchParams(location.search).get('ref'))tab='akun';go()}
+function nav(){const t=[['studio','Studio'],['layanan','Layanan'],['bayar','Bayar'],['akun','Akun']];if(isAdmin())t.push(['admin','Admin']);
+ $('#nav').innerHTML=t.map(a=>`<button class="${tab==a[0]?'on':''}" onclick="tab='${a[0]}';go()">${a[1]}</button>`).join('')}
+async function go(){nav();let h='';if(tab=='studio')h=studio();else if(tab=='layanan')h=layanan();else if(tab=='bayar')h=await bayar();else if(tab=='akun')h=await akun();else if(tab=='admin')h=await adm();$('#m').innerHTML=h;draw()}
+// ---- Studio
+function draw(){const c=$('#cv');if(!c)return;const x=c.getContext('2d');c.width=400;c.height=400;x.fillStyle='#fff';x.fillRect(0,0,400,400);x.fillStyle=st.c;x.strokeStyle='#999';x.beginPath();x.moveTo(130,60);x.lineTo(40,120);x.lineTo(75,180);x.lineTo(110,160);x.lineTo(110,360);x.lineTo(290,360);x.lineTo(290,160);x.lineTo(325,180);x.lineTo(360,120);x.lineTo(270,60);x.quadraticCurveTo(200,110,130,60);x.fill();x.stroke();
+ if(img){x.save();x.translate(200+st.x,210+st.y);x.rotate(st.r*Math.PI/180);const w=st.s*2,h=w*img.height/img.width;x.drawImage(img,-w/2,-h/2,w,h);x.restore()}}
+function studio(){if(!T)return '<div class="c">Masuk dulu di tab Akun.</div>';
+ return `<div class="c"><canvas id="cv"></canvas><input type="file" accept="image/*" onchange="pick(this)">
+ <div class="r"><button onclick="op('removebg')">Hapus BG</button><button onclick="op('redraw')">Redraw AI</button><button onclick="op('separate')">Pecah warna</button></div>
+ <div class="r"><input id="lpi" type="number" value="55" placeholder="LPI"><input id="ang" type="number" value="45" placeholder="Sudut"><button onclick="op('afdruk')">Afdruk</button></div>
+ <div class="r"><small>Warna produk</small><input type="color" value="${st.c}" oninput="st.c=this.value;draw()" style="width:60px"></div>
+ ${[['s','Ukuran',10,150],['x','Geser X',-100,100],['y','Geser Y',-120,120],['r','Putar',-180,180]].map(a=>`<small>${a[1]}</small><input type="range" min="${a[2]}" max="${a[3]}" value="${st[a[0]]}" oninput="st.${a[0]}=+this.value;draw()">`).join('')}
+ <button class="p" onclick="mk()">Render mockup</button>
+ ${asset?`<img class="pv" src="${asset.preview}?t=${T}"><button class="p" onclick="dl()">${isAdmin()?'Download':'Download / Bayar'}</button>`:''}</div>
+ <div class="c"><b>Prompt desain (Claude)</b><textarea id="pt" placeholder="Contoh: logo kopi gaya retro"></textarea><button onclick="pr()">Rapikan prompt</button><small id="po"></small>
+ <button onclick="gi()">Buat gambar AI</button></div>`}
+function pick(i){file=i.files[0];if(!file)return;const m=new Image();m.onload=()=>{img=m;draw()};m.src=URL.createObjectURL(file)}
+A('op',async o=>{if(!file)throw Error('Pilih gambar dulu');const f=new FormData();f.append('image',file);f.append('lpi',$('#lpi').value);f.append('angle',$('#ang').value);asset=await api('/process/'+o,{method:'POST',body:f});go()});
+A('mk',async()=>{if(!asset)throw Error('Proses gambar dulu (mis. Hapus BG)');asset=await api('/mockup',{method:'POST',body:{assetId:asset.assetId,...st,color:st.c}});go()});
+A('dl',async()=>{const r=await fetch(`/api/assets/${asset.assetId}/download?t=${T}`);if(r.status==402){tab='bayar';alert('Selesaikan pembayaran dulu');return go()}if(!r.ok)throw Error('Gagal download');const b=await r.blob(),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='rojak-'+asset.kind;a.click()});
+A('pr',async()=>{const j=await api('/ai/prompt',{method:'POST',body:{text:$('#pt').value}});$('#po').textContent=j.prompt;$('#pt').value=j.prompt});
+A('gi',async()=>{asset=await api('/ai/image',{method:'POST',body:{prompt:$('#pt').value}});go()});
+// ---- Layanan (invoice, video)
+function layanan(){if(!T)return '<div class="c">Masuk dulu di tab Akun.</div>';
+ return `<div class="c"><b>Invoice kustom</b><input id="ib" placeholder="Nama brand"><input id="ic" placeholder="Nama customer"><input id="ia" placeholder="Alamat customer"><input id="in" placeholder="Nama barang"><input id="iq" type="number" placeholder="Qty"><input id="ip" type="number" placeholder="Harga satuan"><button class="p" onclick="inv()">Pesan invoice (${rp(CFG.prices.invoice)})</button></div>
+ <div class="c"><b>Video promosi</b><small>Pakai aset mockup terakhir di Studio.</small><button class="p" onclick="vid('video',{})">Pesan video (${rp(CFG.prices.video)})</button></div>
+ <div class="c"><b>Video viral / Face Swap (maks 5 menit)</b><input id="vr" placeholder="Link video referensi"><input id="vt" placeholder="Karakter target"><input id="vd" type="number" placeholder="Durasi detik (maks 300)"><button class="p" onclick="vfs()">Pesan (${rp(CFG.prices.faceswap)})</button></div>`}
+A('inv',async()=>{await api('/orders',{method:'POST',body:{item:'invoice',meta:{brand:$('#ib').value,customer:$('#ic').value,address:$('#ia').value,items:[{name:$('#in').value,qty:+$('#iq').value,price:+$('#ip').value}]}}});tab='bayar';go()});
+A('vid',async(item,meta)=>{await api('/orders',{method:'POST',body:{item,assetId:asset&&asset.assetId,meta}});tab='bayar';go()});
+A('vfs',()=>vid('faceswap',{reference:$('#vr').value,target:$('#vt').value,duration:+$('#vd').value}));
+// ---- Bayar
+async function bayar(){if(!T)return '<div class="c">Masuk dulu di tab Akun.</div>';if(isAdmin())return '<div class="c">Admin gratis, tanpa watermark.</div>';ME=await api('/me');
+ return `<div class="c"><select id="it">${Object.keys(L).map(k=>`<option value="${k}">${L[k]} - ${rp(CFG.prices[k])}</option>`).join('')}</select><button class="p" onclick="ord()">Buat pesanan${asset?' (untuk aset terakhir)':''}</button></div>
+ <div class="c"><b>Transfer ke:</b><br>${CFG.bank.replace(/\n/g,'<br>')}<br>${CFG.hasQris?'<img class="pv" src="/api/qris">':'<small>QRIS belum diatur</small>'}</div>
+ <div class="c"><b>Pesanan saya</b>${ME.orders.map(o=>`<div class="r"><span>#${o.id} ${L[o.item]}<br><small>${o.status}</small></span>${o.status=='dibuat'?`<input type="file" accept="image/*" style="width:140px" onchange="bukti(${o.id},this)">`:''}${o.status=='lunas'&&o.item=='invoice'?`<button onclick="pdf(${o.id})">PDF</button>`:''}</div>`).join('')||'<small>Belum ada</small>'}</div>`}
+A('ord',async()=>{const item=$('#it').value;await api('/orders',{method:'POST',body:{item,assetId:asset&&asset.assetId}});go()});
+A('bukti',async(id,i)=>{const f=new FormData();f.append('image',i.files[0]);await api(`/orders/${id}/proof`,{method:'POST',body:f});go()});
+A('pdf',async id=>{const r=await api(`/orders/${id}/invoice.pdf`,{raw:true}),b=await r.blob();window.open(URL.createObjectURL(b))});
+// ---- Akun
+async function akun(){if(T&&!isAdmin()){ME=await api('/me');return `<div class="c">Masuk: <b>${ME.phone}</b><br>Saldo afiliasi: <b>${rp(ME.balance)}</b><br><small>Link referral:<br>${location.origin}/?ref=${ME.refCode}</small>
+ <input id="pa" type="number" placeholder="Jumlah tarik (min ${rp(CFG.minPayout)})"><button onclick="po()">Tarik saldo</button><button onclick="out()">Keluar</button></div>
+ <div class="c"><b>Video saya</b>${ME.jobs.map(j=>`<div>#${j.id} ${j.type}: ${j.status} ${j.output_url?`<a href="${j.output_url}">unduh</a>`:''}</div>`).join('')||'<small>Belum ada</small>'}</div>`}
+ if(isAdmin())return '<div class="c">Masuk sebagai admin<button onclick="out()">Keluar</button></div>';
+ return `<div class="c"><input id="wa" placeholder="Nomor WhatsApp (08xxx)" inputmode="tel" value="${phone}">${otpSent?`<input id="ot" placeholder="Kode OTP" inputmode="numeric"><button class="p" onclick="vo()">Verifikasi</button>`:`<button class="p" onclick="ro()">Kirim OTP</button>`}</div>
+ <div class="c"><small>Admin: </small><input id="ak" type="password" placeholder="Kunci admin"><button onclick="al()">Masuk admin</button></div>`}
+A('ro',async()=>{phone=$('#wa').value;const j=await api('/auth/otp',{method:'POST',body:{phone}});otpSent=true;if(j.devOtp)alert('Mode dev, OTP: '+j.devOtp);go()});
+A('vo',async()=>{const j=await api('/auth/verify',{method:'POST',body:{phone,code:$('#ot').value,ref:new URLSearchParams(location.search).get('ref')||''}});T=j.token;localStorage.setItem('tk',T);otpSent=false;ME=await api('/me');tab='studio';go()});
+A('al',async()=>{const j=await api('/auth/admin',{method:'POST',body:{key:$('#ak').value}});T=j.token;localStorage.setItem('tk',T);ME=await api('/me');tab='admin';go()});
+A('po',async()=>{await api('/affiliate/payout',{method:'POST',body:{amount:+$('#pa').value}});alert('Permintaan penarikan dikirim');go()});
+window.out=()=>{T=null;ME=null;asset=null;localStorage.removeItem('tk');tab='akun';go()};
+// ---- Admin
+async function adm(){const s=await api('/admin/stats'),o=await api('/admin/orders');
+ return `<div class="c"><b>Ringkasan</b><br>Pengunjung hari ini: ${s.visitorsToday} | User: ${s.users}<br>Omzet total: ${rp(s.omzetTotal)}<table>${s.omzetHarian.slice(0,7).map(d=>`<tr><td>${d.d}</td><td>${rp(d.s)}</td></tr>`).join('')}</table></div>
+ <div class="c"><b>Logo aplikasi</b><input type="file" accept="image/*" onchange="lg(this,'logo')"><small>Dipakai di header, favicon, dan ikon PWA/APK.</small><b>Nama app</b><input id="sn" value="${CFG.appName}"><button onclick="sv()">Simpan nama</button></div>
+ <div class="c"><b>Harga & afiliasi</b>${Object.keys(L).map(k=>`<div class="r"><small>${L[k]}</small><input type="number" id="p_${k}" value="${CFG.prices[k]}" style="width:110px"></div>`).join('')}<div class="r"><small>Komisi afiliasi %</small><input type="number" id="km" style="width:110px" placeholder="mis. 10"></div><div class="r"><small>Minimal payout</small><input type="number" id="mp" value="${CFG.minPayout}" style="width:110px"></div><button class="p" onclick="sv()">Simpan harga</button></div>
+ <div class="c"><b>Rekening</b><textarea id="bk">${CFG.bank}</textarea><button onclick="sv()">Simpan rekening</button><b>QRIS</b><input type="file" accept="image/*" onchange="lg(this,'qris')"></div>
+ <div class="c"><b>Validasi pembayaran</b>${o.map(x=>`<div class="r"><span>#${x.id} ${x.phone} ${L[x.item]} ${rp(x.price)}<br><small>${x.status}</small></span>${x.status=='menunggu'?`<span><button onclick="pf(${x.id})">Bukti</button><button class="p" onclick="vl(${x.id})">Lunas</button></span>`:''}</div>`).join('')||'<small>Kosong</small>'}</div>
+ <div class="c"><b>Penarikan afiliasi</b>${s.payouts.map(p=>`<div class="r"><span>${p.phone} ${rp(p.amount)}</span><button onclick="pd(${p.id})">Sudah dibayar</button></div>`).join('')||'<small>Kosong</small>'}</div>
+ <div class="c"><b>Job video</b>${s.jobs.map(j=>`<div class="r"><span>#${j.id} ${j.type} ${j.status}</span><button onclick="jb(${j.id})">Selesai + link</button></div>`).join('')||'<small>Kosong</small>'}</div>`}
+A('sv',async()=>{const prices={};Object.keys(L).forEach(k=>prices[k]=+$('#p_'+k).value);const b={appName:$('#sn').value,prices,bank:$('#bk').value,minPayout:+$('#mp').value};if($('#km').value!=='')b.komisi=+$('#km').value;await api('/admin/settings',{method:'PUT',body:b});await boot();alert('Tersimpan')});
+A('lg',async(i,w)=>{const f=new FormData();f.append('image',i.files[0]);await api('/admin/'+w,{method:'POST',body:f});await boot();alert('Tersimpan')});
+A('vl',async id=>{await api(`/admin/orders/${id}/validate`,{method:'POST'});go()});
+A('pf',async id=>{const r=await api(`/admin/orders/${id}/proof`,{raw:true}),b=await r.blob();window.open(URL.createObjectURL(b))});
+A('pd',async id=>{await api(`/admin/payouts/${id}/paid`,{method:'POST'});go()});
+A('jb',async id=>{const u=prompt('Link hasil video:');if(u===null)return;await api('/admin/jobs/'+id,{method:'PUT',body:{status:'selesai',output_url:u}});go()});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+boot();
