@@ -1,0 +1,29 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin</title>
+<style>body{font-family:system-ui;background:#111;color:#eee;padding:16px;max-width:560px;margin:auto}input,button{width:100%;padding:11px;margin:4px 0;border-radius:8px;border:0;font-size:15px;box-sizing:border-box}button{background:#e8590c;color:#fff;font-weight:700}.c{background:#1c1c1c;padding:14px;border-radius:12px;margin:10px 0}label{font-size:13px;color:#aaa}</style></head><body>
+<h2>Admin Rojak Design</h2>
+<div id="lg" class="c"><input id="ph" placeholder="No WA admin"><input id="k" type="password" placeholder="Master key"><button onclick="login()">Masuk</button></div>
+<div id="ad" hidden>
+<div class="c" id="st"></div>
+<div class="c"><b>Logo Aplikasi</b><input type="file" id="lf" accept="image/*"><button onclick="up('logo','lf')">Upload Logo</button></div>
+<div class="c"><b>API Key</b><div id="ak"></div></div>
+<div class="c"><b>Harga (Rp)</b><div id="pz"></div></div>
+<div class="c"><b>Rekening & Afiliasi</b><label>Mandiri</label><input id="b0"><label>SeaBank</label><input id="b1"><label>Komisi afiliasi %</label><input id="ap" type="number"><label>Min payout</label><input id="mp" type="number"><label>Nama App</label><input id="an"><label>QRIS</label><input type="file" id="qf" accept="image/*"><button onclick="up('qris','qf')">Upload QRIS</button></div>
+<button onclick="saveS()">SIMPAN SEMUA PENGATURAN</button>
+<div class="c"><b>Pesanan</b><div id="ol"></div></div></div>
+<script>
+let T,S;const $=i=>document.getElementById(i);
+const api=async(u,o={})=>{o.headers={'x-token':T||'',...(o.body&&!(o.body instanceof FormData)?{'Content-Type':'application/json'}:{})};if(o.body&&!(o.body instanceof FormData))o.body=JSON.stringify(o.body);const r=await fetch(u,o);const j=await r.json().catch(()=>({}));if(!r.ok)alert(j.error||'error');return j};
+const KEYS={whatsappUrl:'WhatsApp Gateway URL',whatsappToken:'WhatsApp API Key/Token',imageAI:'AI Image API Key',imageAIUrl:'AI Image Endpoint URL',videoAI:'AI Video API Key',faceSwap:'Face Swap API Key',removeBg:'Remove Background API Key'};
+async function login(){const j=await api('/api/login',{method:'POST',body:{phone:$('ph').value,otp:$('k').value}});if(!j.admin)return alert('Bukan admin');T=j.token;$('lg').hidden=true;$('ad').hidden=false;load()}
+async function load(){S=await api('/api/admin/settings');
+$('ak').innerHTML=Object.entries(KEYS).map(([k,l])=>`<label>${l}</label><input id="k_${k}" value="${S.apiKeys[k]||''}">`).join('');
+$('pz').innerHTML=Object.entries(S.prices).map(([k,v])=>`<label>${k}</label><input type=number id="p_${k}" value=${v}>`).join('');
+$('b0').value=S.banks[0].no;$('b1').value=S.banks[1].no;$('ap').value=S.affiliatePct;$('mp').value=S.minPayout;$('an').value=S.appName;
+const s=await api('/api/admin/stats');$('st').innerHTML=`User: ${s.users} | Order: ${s.orders} | Omset: Rp${s.omset.toLocaleString('id')}`;orders()}
+async function saveS(){const apiKeys={},prices={};for(const k in KEYS)apiKeys[k]=$('k_'+k).value;for(const k in S.prices)prices[k]=+$('p_'+k).value;
+await api('/api/admin/settings',{method:'PUT',body:{apiKeys,prices,appName:$('an').value,affiliatePct:+$('ap').value,minPayout:+$('mp').value,banks:[{name:'Mandiri',no:$('b0').value},{name:'SeaBank',no:$('b1').value}]}});alert('Tersimpan')}
+async function up(n,i){const f=new FormData;f.append(n,$(i).files[0]);await api('/api/admin/'+n,{method:'POST',body:f});alert('Terupload')}
+async function orders(){const o=await api('/api/orders');$('ol').innerHTML=o.map(x=>`<p>${x.phone} - ${x.service} Rp${x.price} <b>${x.status}</b><br>${x.proof?`<a target=_blank href="#" onclick="proof('${x.proof}');return false">Lihat bukti</a> `:''}${x.status!='lunas'?`<input type=file id="r_${x.id}"><button onclick="ok('${x.id}')">Validasi Lunas & Unlock</button>`:''}</p>`).join('')}
+async function proof(f){const r=await fetch('/api/admin/proof/'+f,{headers:{'x-token':T}});window.open(URL.createObjectURL(await r.blob()))}
+async function ok(id){const f=new FormData,e=$('r_'+id);if(e.files[0])f.append('result',e.files[0]);await api(`/api/admin/orders/${id}/approve`,{method:'POST',body:f});load()}
+</script></body></html>

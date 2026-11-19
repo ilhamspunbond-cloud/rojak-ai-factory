@@ -1,10 +1,25 @@
-<!DOCTYPE html>
-<html lang="id"><head><meta charset="utf-8"><title>Rojak Design</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#d9480f">
-<link rel="manifest" href="/manifest.webmanifest">
-<link rel="icon" id="fav" href="/api/icon/64.png">
-<link rel="stylesheet" href="style.css"></head><body>
-<header><img id="logo" src="/api/icon/64.png" alt=""><b id="an">Rojak Design</b></header>
-<nav id="nav"></nav><main id="m"></main>
-<script src="app.js"></script></body></html>
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="/manifest.json"><title>Rojak Design</title>
+<style>body{font-family:system-ui;background:#111;color:#eee;margin:0;padding:16px;max-width:520px;margin:auto}input,button,select,textarea{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:0;font-size:16px;box-sizing:border-box}button{background:#e8590c;color:#fff;font-weight:700}.c{background:#1c1c1c;padding:14px;border-radius:12px;margin:10px 0}img.l{height:48px}.wm{position:relative}.wm:after{content:"ROJAK DESIGN - PREVIEW";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff8;font-size:22px;transform:rotate(-25deg);pointer-events:none}</style></head><body>
+<h2><img id="logo" class="l"> <span id="nm"></span></h2>
+<div id="lg" class="c"><input id="ph" placeholder="No WhatsApp (628xx)"><button onclick="otp()">Kirim OTP</button><input id="ot" placeholder="Kode OTP"><button onclick="login()">Masuk</button></div>
+<div id="app" hidden><div class="c"><b>Referral:</b> <span id="ref"></span><br>Saldo: <span id="bal"></span></div>
+<div class="c"><textarea id="pr" placeholder="Deskripsi desain (AI)"></textarea><button onclick="gen()">Generate Desain</button><div id="out" class="wm"></div></div>
+<div class="c"><select id="sv"></select><button onclick="order()">Pesan</button></div>
+<div class="c"><b>Pesanan</b><div id="ol"></div></div></div>
+<script>
+let T=localStorage.t,A=false,C;const $=i=>document.getElementById(i);
+const api=async(u,o={})=>{o.headers={'x-token':T||'',...(o.body&&!(o.body instanceof FormData)?{'Content-Type':'application/json'}:{})};if(o.body&&!(o.body instanceof FormData))o.body=JSON.stringify(o.body);const r=await fetch(u,o);const j=await r.json().catch(()=>({}));if(!r.ok)alert(j.error||'error');return j};
+const rp=n=>'Rp'+n.toLocaleString('id');
+(async()=>{C=await api('/api/config');$('nm').textContent=C.appName;if(C.logo)$('logo').src=C.logo;document.title=C.appName;
+const L={mockup:'Mockup Desain',invoice:'Invoice Kustom',afdruk:'Mockup Afdruk Sablon',video:'Video Promosi',paket:'Paket Komplit',dtfSplit:'Pecah Warna DTF',aiVideo:'AI Video (Face Swap)'};
+$('sv').innerHTML=Object.keys(C.prices).map(k=>`<option value=${k}>${L[k]||k} - ${rp(C.prices[k])}</option>`);if(T)show()})();
+async function otp(){await api('/api/otp',{method:'POST',body:{phone:$('ph').value}});alert('OTP dikirim')}
+async function login(){const j=await api('/api/login',{method:'POST',body:{phone:$('ph').value,otp:$('ot').value,ref:new URLSearchParams(location.search).get('ref')}});if(j.token){T=localStorage.t=j.token;show()}}
+async function show(){$('lg').hidden=true;$('app').hidden=false;list()}
+async function list(){const o=await api('/api/orders');if(!Array.isArray(o))return;$('ol').innerHTML=o.map(x=>`<p>${x.service} ${rp(x.price)} <b>${x.status}</b> ${x.status=='menunggu_bayar'?`<input type=file onchange="proof('${x.id}',this)">`:''}${x.status=='lunas'&&x.result?`<a href="#" onclick="dl('${x.id}')">Download</a>`:''}</p>`).join('')}
+async function order(){const o=await api('/api/orders',{method:'POST',body:{service:$('sv').value}});if(o.id){alert('Transfer '+rp(o.price)+' ke:\n'+C.banks.map(b=>b.name+' '+b.no).join('\n')+'\nlalu upload bukti transfer.');list()}}
+async function proof(id,e){const f=new FormData;f.append('proof',e.files[0]);await api(`/api/orders/${id}/proof`,{method:'POST',body:f});list()}
+async function dl(id){const r=await fetch(`/api/orders/${id}/download`,{headers:{'x-token':T}});const b=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='rojak-'+id;a.click()}
+async function gen(){const j=await api('/api/generate',{method:'POST',body:{prompt:$('pr').value}});$('out').textContent=JSON.stringify(j).slice(0,300)}
+if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js');
+</script></body></html>
